@@ -1,0 +1,40 @@
+################################################################################
+# This section gets relevant information                                       #
+#(ie, Last name, ID, and Graduation year)                                      #
+#code sanitized for public display                                             #
+################################################################################
+$id = Read-Host "What is the ID number  ?"
+$lastName = Read-Host "What is the Last Name?"
+$now=Get-Date -format "MM-dd-yyyy HH:mm"
+
+
+#Load module for interacting with Active Directory
+Import-module ActiveDirectory
+
+#Verify user on two pieces of user information
+$User = Get-ADUser -Filter {sAMAccountName -eq $id -and surname -eq $lastname}
+If ($User -eq $Null){
+    Write-Host "User $id was not found"
+    }
+Else {
+    #Disable user
+    Disable-ADAccount -Identity $id
+
+    #Set disabled date in Description property
+    Set-ADUser -Identity $id  -Description "Disabled $now"
+
+    #Move user to ToBeDeleted OU
+    Get-ADUser $id | Move-ADObject -TargetPath 'OU=ToBeDeleted,OU=students=DC=domain,DC=test'
+
+    #Remove from all AD groups except Domain Users
+    $userGroup = Get-ADUser -Identity $id -Properties MemberOf
+    foreach ($group in ($userGroup | Select-Object -ExpandProperty MemberOf)){
+		Remove-ADGroupMember -Identity $group -Members $userGroup -Confirm:$False
+	}
+
+    Write-Host "User $id disabled, group membership removed and account moved"
+
+    #Call GAM to disable account
+    $command = "C:\GAM\gam.exe update user " + $id + "@<google domain> " + "suspended off"
+    $proc = Invoke-WmiMethod -ComputerName <GAM server> -Class Win32_Process -Name Create -ArgumentList $command
+  }
