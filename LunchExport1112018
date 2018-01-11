@@ -1,0 +1,25 @@
+SELECT p.studentNumber,
+       i.lastName,
+       i.firstName,
+       i.gender,
+       e.grade,
+       i.raceEthnicity,
+       CONVERT(CHAR(10),
+       i.birthdate,
+       101) AS birthdate,
+       f.eligibility,
+       CONVERT(CHAR(10),
+       f.endDate,
+       101) AS endDate
+FROM   Person AS p INNER JOIN
+       [Identity] AS i ON i.identityID = p.currentIdentityID INNER JOIN
+       Enrollment AS e ON e.personID = p.personID LEFT OUTER JOIN
+       POSEligibility AS f ON f.personID = p.personID AND f.endDate &gt;= GETDATE()
+WHERE  (p.studentNumber NOT IN
+          (SELECT p.studentNumber
+          FROM Person INNER JOIN
+          Roster AS r ON r.personID = p.personID INNER JOIN
+          [Section] AS s ON s.sectionID = r.sectionID
+             WHERE (s.sectionID IN ('96371', '96373', '96190')) AND (r.endDate IS NULL))) AND (e.endDate IS NULL OR
+                   e.endDate &gt; GETDATE()) AND (e.noShow = 0 OR
+                   e.noShow IS NULL) AND (e.endYear = '2018') AND (e.calendarID = '26') AND (e.serviceType = 'P')
