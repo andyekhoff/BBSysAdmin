@@ -1,1 +1,1 @@
-﻿Get-ADUser -SearchBase "OU=Faculty-Staff,DC=bbchs,DC=local"-filter * -properties passwordlastset, passwordneverexpires | sort-object passwordlastset,name | select-object Name, passwordlastset, passwordneverexpires | Export-csv -path h:\passwordlastset.csv
+﻿Get-ADUser -SearchBase "OU=Staff,DC=fabrikam,DC=com"-filter * -properties passwordlastset, passwordneverexpires | sort-object passwordlastset,name | select-object Name, passwordlastset, passwordneverexpires | Export-csv -path h:\passwordlastset.csv
