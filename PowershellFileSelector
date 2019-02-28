@@ -1,0 +1,20 @@
+Function Get-FileName($initialDirectory)
+{
+    [System.Reflection.Assembly]::LoadWithPartialName("System.windows.forms") | Out-Null
+    
+    $OpenFileDialog = New-Object System.Windows.Forms.OpenFileDialog
+    $OpenFileDialog.initialDirectory = $initialDirectory
+    $OpenFileDialog.filter = "CSV (*.csv)| *.csv"
+    $OpenFileDialog.ShowDialog() | Out-Null
+    $OpenFileDialog.filename
+}
+
+
+$inFile = Get-FileName "%USERPROFILE%/Desktop"
+$s = Import-CSV $inFile
+#Construct an out-array to use for data export
+$ExportArray = @()
+
+Foreach($value in $s){
+  #Do something with the CSV values
+}
